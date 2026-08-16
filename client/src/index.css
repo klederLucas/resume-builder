@@ -168,10 +168,25 @@
   }
 
   .resume-page {
+    position: relative;
     width: 210mm;
     overflow: hidden;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  /* The blank header/footer band. It cannot be an `@page` margin: Chrome
+     paints nothing in the page margin area — not the root background, not a
+     fixed element — so the teal column would be cut into stripes. Padding on a
+     box that fragments across pages is normally drawn once, at the very start
+     and the very end; `box-decoration-break: clone` redraws it on every
+     fragment, which is exactly one band per sheet. Keep the value in sync with
+     PAGE_MARGIN_TOP_MM / PAGE_MARGIN_BOTTOM_MM in lib/paper.ts, which is what
+     usePageCount paginates against. */
+  .resume-band {
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    padding-block: 10mm;
   }
 
   .resume-block {
@@ -184,6 +199,8 @@
 
   @media print {
     @page {
+      /* Stays 0: the sheet is full bleed and the blank band comes from
+         `.resume-band` instead. */
       size: A4;
       margin: 0;
     }

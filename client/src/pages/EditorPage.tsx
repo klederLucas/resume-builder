@@ -7,7 +7,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -41,10 +41,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
+import { useMessages } from "@/i18n/LocaleContext";
+import type { Messages } from "@/i18n/messages";
 import { downloadResumeJson, readResumeFile } from "@/lib/resumeFile";
 import {
+  createResumeFormSchema,
   fromFormValues,
-  resumeFormSchema,
   toFormValues,
   type ResumeFormValues,
 } from "@/lib/resumeForm";
@@ -64,9 +66,14 @@ export default function EditorPage() {
     useResumeDraft();
   const [, navigate] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const t = useMessages();
+
+  // Rebuilt on a language switch so the required-field errors are raised in
+  // the interface language. `useForm` re-reads its options on every render.
+  const schema = useMemo(() => createResumeFormSchema(t.validation), [t]);
 
   const form = useForm<ResumeFormValues>({
-    resolver: zodResolver(resumeFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: toFormValues(draft),
     mode: "onBlur",
     reValidateMode: "onChange",
@@ -99,12 +106,12 @@ export default function EditorPage() {
     try {
       const resume = await readResumeFile(file, DEFAULT_TEMPLATE_ID);
       loadResume(resume);
-      toast.success("Currículo importado.");
+      toast.success(t.editor.imported);
     } catch (error) {
       toast.error(
         error instanceof ResumeImportError
-          ? error.message
-          : "Não foi possível ler o arquivo."
+          ? t.importError[error.code]
+          : t.importError.unknown
       );
     }
   };
@@ -115,17 +122,17 @@ export default function EditorPage() {
       navigate("/preview");
     },
     () => {
-      toast.error("Revise os campos obrigatórios destacados.");
+      toast.error(t.editor.invalidForm);
     }
   );
 
   return (
     <BuilderShell
-      title="Seus dados"
-      description="Só nome, cargo, localização, telefone e e-mail são obrigatórios. As demais seções aparecem no currículo apenas se você preenchê-las."
+      title={t.editor.title}
+      description={t.editor.description}
       actions={
         <>
-          <SaveIndicator savedAt={savedAt} isSaving={isSaving} />
+          <SaveIndicator savedAt={savedAt} isSaving={isSaving} t={t} />
 
           <input
             ref={fileInputRef}
@@ -146,7 +153,7 @@ export default function EditorPage() {
             onClick={() => fileInputRef.current?.click()}
           >
             <Upload className="mr-1.5 h-4 w-4" />
-            Importar
+            {t.editor.import}
           </Button>
 
           <Button
@@ -156,7 +163,7 @@ export default function EditorPage() {
             onClick={() => downloadResumeJson(draft)}
           >
             <Download className="mr-1.5 h-4 w-4" />
-            Exportar
+            {t.editor.export}
           </Button>
 
           <Button
@@ -168,14 +175,15 @@ export default function EditorPage() {
                 ...SAMPLE_RESUME,
                 meta: { ...SAMPLE_RESUME.meta, ...draft.meta },
               });
-              toast.success("Dados de exemplo carregados.");
+              toast.success(t.editor.exampleLoaded);
             }}
           >
             <Sparkles className="mr-1.5 h-4 w-4" />
-            Exemplo
+            {t.editor.example}
           </Button>
 
           <ClearDraftButton
+            t={t}
             onConfirm={() => {
               resetDraft();
               form.reset(
@@ -183,7 +191,7 @@ export default function EditorPage() {
                   createEmptyResume(draft.meta.templateId, draft.meta.language)
                 )
               );
-              toast.success("Rascunho limpo.");
+              toast.success(t.editor.draftCleared);
             }}
           />
         </>
@@ -192,9 +200,11 @@ export default function EditorPage() {
       <FormProvider {...form}>
         <form onSubmit={onSubmit} className="flex flex-col gap-6">
           <section className="bg-background rounded-lg border p-4 sm:p-6">
-            <h2 className="mb-1 text-lg font-semibold">Identificação</h2>
+            <h2 className="mb-1 text-lg font-semibold">
+              {t.editor.identification}
+            </h2>
             <p className="text-muted-foreground mb-4 text-sm">
-              Campos obrigatórios.
+              {t.editor.identificationHint}
             </p>
             <ProfileFields />
           </section>
@@ -205,74 +215,80 @@ export default function EditorPage() {
             className="bg-background rounded-lg border px-4 sm:px-6"
           >
             <AccordionItem value="summary">
-              <AccordionTrigger>Sumário</AccordionTrigger>
+              <AccordionTrigger>{t.editor.sections.summary}</AccordionTrigger>
               <AccordionContent>
                 <FormTextField
                   multiline
                   rows={6}
                   name="summary"
-                  label="Sumário profissional"
-                  placeholder="Um parágrafo sobre sua atuação, especialidade e o que você procura."
-                  description="Aparece no topo da coluna principal."
+                  label={t.form.summary.label}
+                  placeholder={t.form.summary.placeholder}
+                  description={t.form.summary.description}
                 />
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="competencies">
-              <AccordionTrigger>Principais competências</AccordionTrigger>
+              <AccordionTrigger>
+                {t.editor.sections.competencies}
+              </AccordionTrigger>
               <AccordionContent>
                 <StringListField
                   name="coreCompetencies"
-                  label="Competências"
-                  description="Itens curtos, listados na barra lateral. Enter adiciona a próxima."
-                  placeholder="Desenvolvimento Back-End"
-                  addLabel="Adicionar competência"
+                  label={t.form.competencies.label}
+                  description={t.form.competencies.description}
+                  placeholder={t.form.competencies.placeholder}
+                  addLabel={t.form.competencies.add}
                 />
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="skills">
-              <AccordionTrigger>Resumo técnico</AccordionTrigger>
+              <AccordionTrigger>{t.editor.sections.skills}</AccordionTrigger>
               <AccordionContent>
                 <FieldGroup className="gap-6">
                   <StringListField
                     name="skills.programmingLanguages"
-                    label="Linguagens de programação"
-                    placeholder="TypeScript"
-                    addLabel="Adicionar linguagem"
+                    label={t.form.programmingLanguages.label}
+                    placeholder={t.form.programmingLanguages.placeholder}
+                    addLabel={t.form.programmingLanguages.add}
                   />
                   <StringListField
                     name="skills.technologies"
-                    label="Tecnologias"
-                    placeholder="Node.js"
-                    addLabel="Adicionar tecnologia"
+                    label={t.form.technologies.label}
+                    placeholder={t.form.technologies.placeholder}
+                    addLabel={t.form.technologies.add}
                   />
                   <StringListField
                     name="skills.toolsPlatforms"
-                    label="Ferramentas e plataformas"
-                    placeholder="Docker"
-                    addLabel="Adicionar ferramenta"
+                    label={t.form.toolsPlatforms.label}
+                    placeholder={t.form.toolsPlatforms.placeholder}
+                    addLabel={t.form.toolsPlatforms.add}
                   />
                 </FieldGroup>
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="experience">
-              <AccordionTrigger>Experiência profissional</AccordionTrigger>
+              <AccordionTrigger>
+                {t.editor.sections.experience}
+              </AccordionTrigger>
               <AccordionContent>
                 <ExperienceFields />
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="education">
-              <AccordionTrigger>Formação acadêmica</AccordionTrigger>
+              <AccordionTrigger>{t.editor.sections.education}</AccordionTrigger>
               <AccordionContent>
                 <EducationFields />
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="certifications" className="border-b-0">
-              <AccordionTrigger>Licenças e certificações</AccordionTrigger>
+              <AccordionTrigger>
+                {t.editor.sections.certifications}
+              </AccordionTrigger>
               <AccordionContent>
                 <CertificationFields />
               </AccordionContent>
@@ -281,7 +297,7 @@ export default function EditorPage() {
 
           <div className="flex justify-end pb-8">
             <Button type="submit" size="lg">
-              Visualizar currículo
+              {t.editor.submit}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -294,9 +310,11 @@ export default function EditorPage() {
 function SaveIndicator({
   savedAt,
   isSaving,
+  t,
 }: {
   savedAt: number | null;
   isSaving: boolean;
+  t: Messages;
 }) {
   const [, forceTick] = useState(0);
 
@@ -313,48 +331,52 @@ function SaveIndicator({
       {isSaving ? (
         <>
           <Spinner />
-          Salvando…
+          {t.editor.saving}
         </>
       ) : savedAt !== null ? (
         <>
           <Check className="h-3.5 w-3.5 shrink-0" />
-          Rascunho salvo {formatElapsed(savedAt)}
+          {formatSavedAt(savedAt, t)}
         </>
       ) : null}
     </span>
   );
 }
 
-function formatElapsed(savedAt: number): string {
+function formatSavedAt(savedAt: number, t: Messages): string {
   const seconds = Math.round((Date.now() - savedAt) / 1000);
-  if (seconds < 60) return "agora";
+  if (seconds < 60) return t.editor.savedNow;
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `há ${minutes} min`;
-  return `há ${Math.round(minutes / 60)} h`;
+  if (minutes < 60) return t.editor.savedMinutesAgo(minutes);
+  return t.editor.savedHoursAgo(Math.round(minutes / 60));
 }
 
-function ClearDraftButton({ onConfirm }: { onConfirm: () => void }) {
+function ClearDraftButton({
+  t,
+  onConfirm,
+}: {
+  t: Messages;
+  onConfirm: () => void;
+}) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button type="button" variant="ghost" size="sm">
           <Trash2 className="mr-1.5 h-4 w-4" />
-          Limpar
+          {t.editor.clear}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Limpar todos os dados?</AlertDialogTitle>
+          <AlertDialogTitle>{t.editor.clearDialog.title}</AlertDialogTitle>
           <AlertDialogDescription>
-            Isso apaga o currículo salvo neste navegador. O estilo e o idioma
-            escolhidos são mantidos. Se quiser guardar o que preencheu, use
-            “Exportar” antes.
+            {t.editor.clearDialog.description}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>{t.editor.clearDialog.cancel}</AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm}>
-            Limpar mesmo assim
+            {t.editor.clearDialog.confirm}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

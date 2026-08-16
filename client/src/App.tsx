@@ -2,6 +2,7 @@ import { Route, Switch } from "wouter";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { LocaleProvider } from "@/i18n/LocaleContext";
 import EditorPage from "@/pages/EditorPage";
 import NotFound from "@/pages/NotFound";
 import PreviewPage from "@/pages/PreviewPage";
@@ -27,12 +28,14 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
-        <TooltipProvider>
-          <Toaster />
-          <ResumeDraftProvider>
-            <Router />
-          </ResumeDraftProvider>
-        </TooltipProvider>
+        <LocaleProvider>
+          <TooltipProvider>
+            <Toaster />
+            <ResumeDraftProvider>
+              <Router />
+            </ResumeDraftProvider>
+          </TooltipProvider>
+        </LocaleProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

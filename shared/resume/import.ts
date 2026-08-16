@@ -8,10 +8,16 @@ import type {
   ResumeExperience,
 } from "./schema";
 
+/** Stable identifier so the UI can show the failure in its own language. */
+export type ResumeImportErrorCode = "not-json" | "not-object" | "not-resume";
+
 export class ResumeImportError extends Error {
-  constructor(message: string) {
+  readonly code: ResumeImportErrorCode;
+
+  constructor(code: ResumeImportErrorCode, message: string) {
     super(message);
     this.name = "ResumeImportError";
+    this.code = code;
   }
 }
 
@@ -115,7 +121,10 @@ export function normalizeResume(
 ): Resume {
   const root = asRecord(input);
   if (!root) {
-    throw new ResumeImportError("O arquivo não contém um objeto JSON válido.");
+    throw new ResumeImportError(
+      "not-object",
+      "O arquivo não contém um objeto JSON válido."
+    );
   }
 
   const looksLikeResume = KNOWN_TOP_LEVEL_KEYS.some(
@@ -123,6 +132,7 @@ export function normalizeResume(
   );
   if (!looksLikeResume) {
     throw new ResumeImportError(
+      "not-resume",
       "O arquivo não parece ser um currículo exportado por este app."
     );
   }
@@ -206,7 +216,7 @@ export function parseResumeFile(
   try {
     parsed = JSON.parse(text);
   } catch {
-    throw new ResumeImportError("O arquivo não é um JSON válido.");
+    throw new ResumeImportError("not-json", "O arquivo não é um JSON válido.");
   }
   return normalizeResume(parsed, options);
 }

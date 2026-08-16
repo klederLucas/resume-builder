@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useLocale } from "@/i18n/LocaleContext";
+import type { AppLocale, Messages } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import { useResumeDraft } from "@/state/ResumeDraftContext";
 import { RESUME_TEMPLATES } from "@/templates/registry";
@@ -34,26 +36,26 @@ import {
 export default function TemplatePickerPage() {
   const { draft, setTemplateId, setLanguage, replaceDraft } = useResumeDraft();
   const [, navigate] = useLocation();
+  const { locale, t } = useLocale();
 
   const language = draft.meta.language;
   const hasDraft = !isResumeBlank(draft);
 
   return (
-    <BuilderShell
-      title="Escolha o estilo do currículo"
-      description="Selecione um modelo e o idioma. Você pode trocar os dois a qualquer momento, sem perder o que já preencheu."
-    >
+    <BuilderShell title={t.picker.title} description={t.picker.description}>
       <div className="flex flex-col gap-8">
         <RadioGroup
           value={draft.meta.templateId}
           onValueChange={setTemplateId}
           className="grid gap-4 sm:grid-cols-2"
         >
-          {RESUME_TEMPLATES.map((template) => (
+          {RESUME_TEMPLATES.map(template => (
             <TemplateCard
               key={template.id}
               template={template}
               language={language}
+              locale={locale}
+              t={t}
               selected={template.id === draft.meta.templateId}
               onUseSample={() => {
                 replaceDraft({
@@ -64,7 +66,7 @@ export default function TemplatePickerPage() {
                     language,
                   },
                 });
-                toast.success("Dados de exemplo carregados. É só editar.");
+                toast.success(t.picker.sampleLoaded);
                 navigate("/editor");
               }}
             />
@@ -72,17 +74,18 @@ export default function TemplatePickerPage() {
         </RadioGroup>
 
         <section className="bg-background rounded-lg border p-4">
-          <h2 className="text-sm font-semibold">Idioma do currículo</h2>
+          <h2 className="text-sm font-semibold">
+            {t.picker.resumeLanguageTitle}
+          </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            Define os títulos das seções do documento gerado. A interface do app
-            continua em português.
+            {t.picker.resumeLanguageDescription}
           </p>
           <RadioGroup
             value={language}
-            onValueChange={(value) => setLanguage(value as ResumeLanguage)}
+            onValueChange={value => setLanguage(value as ResumeLanguage)}
             className="mt-3 flex flex-wrap gap-2"
           >
-            {RESUME_LANGUAGES.map((option) => (
+            {RESUME_LANGUAGES.map(option => (
               <Label
                 key={option}
                 htmlFor={`language-${option}`}
@@ -102,12 +105,12 @@ export default function TemplatePickerPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <Button size="lg" onClick={() => navigate("/editor")}>
-            {hasDraft ? "Continuar rascunho" : "Começar"}
+            {hasDraft ? t.picker.continueDraft : t.picker.start}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
           {hasDraft && (
             <p className="text-muted-foreground text-sm">
-              Você tem um currículo em andamento salvo neste navegador.
+              {t.picker.draftHint}
             </p>
           )}
         </div>
@@ -119,11 +122,15 @@ export default function TemplatePickerPage() {
 function TemplateCard({
   template,
   language,
+  locale,
+  t,
   selected,
   onUseSample,
 }: {
   template: ResumeTemplate;
   language: ResumeLanguage;
+  locale: AppLocale;
+  t: Messages;
   selected: boolean;
   onUseSample: () => void;
 }) {
@@ -141,7 +148,9 @@ function TemplateCard({
     <div
       className={cn(
         "bg-background flex flex-col gap-4 rounded-lg border p-4 transition-colors",
-        selected ? "border-primary ring-primary/20 ring-2" : "hover:border-primary/40"
+        selected
+          ? "border-primary ring-primary/20 ring-2"
+          : "hover:border-primary/40"
       )}
     >
       <Label
@@ -156,11 +165,11 @@ function TemplateCard({
           />
           <div className="flex-1">
             <span className="flex items-center gap-2 font-semibold">
-              {template.name}
+              {template.name[locale]}
               {selected && <Check className="text-primary h-4 w-4" />}
             </span>
             <span className="text-muted-foreground mt-1 block text-sm font-normal">
-              {template.description}
+              {template.description[locale]}
             </span>
           </div>
         </div>
@@ -172,16 +181,15 @@ function TemplateCard({
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="self-start">
             <Eye className="mr-2 h-4 w-4" />
-            Ver exemplo completo
+            {t.picker.viewExample}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-h-[90vh] gap-4 overflow-y-auto sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>{template.name} — exemplo preenchido</DialogTitle>
-            <DialogDescription>
-              Currículo fictício, no idioma selecionado, para você ver como o
-              modelo fica com conteúdo real.
-            </DialogDescription>
+            <DialogTitle>
+              {t.picker.exampleTitle(template.name[locale])}
+            </DialogTitle>
+            <DialogDescription>{t.picker.exampleDescription}</DialogDescription>
           </DialogHeader>
 
           <ScaledSheet>
@@ -191,10 +199,10 @@ function TemplateCard({
           <DialogFooter className="sm:justify-start">
             <Button onClick={onUseSample}>
               <FilePlus2 className="mr-2 h-4 w-4" />
-              Usar estes dados de exemplo
+              {t.picker.useExample}
             </Button>
             <Button variant="ghost" onClick={() => setExampleOpen(false)}>
-              Fechar
+              {t.picker.close}
             </Button>
           </DialogFooter>
         </DialogContent>

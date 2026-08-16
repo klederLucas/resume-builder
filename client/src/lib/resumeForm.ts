@@ -2,34 +2,44 @@ import { z } from "zod";
 
 import {
   certificationSchema,
+  createProfileSchema,
   educationSchema,
-  profileSchema,
+  type ProfileValidationMessages,
   type Resume,
 } from "@shared/resume";
 
 const stringItemSchema = z.object({ value: z.string() });
 
-export const resumeFormSchema = z.object({
-  profile: profileSchema,
-  summary: z.string(),
-  coreCompetencies: z.array(stringItemSchema),
-  skills: z.object({
-    programmingLanguages: z.array(stringItemSchema),
-    technologies: z.array(stringItemSchema),
-    toolsPlatforms: z.array(stringItemSchema),
-  }),
-  experience: z.array(
-    z.object({
-      period: z.string(),
-      role: z.string(),
-      company: z.string(),
-      description: z.string(),
-      achievements: z.array(stringItemSchema),
-    })
-  ),
-  education: z.array(educationSchema),
-  certifications: z.array(certificationSchema),
-});
+/**
+ * Built per interface language: the profile messages are the only localized
+ * part, everything else in the form is free text.
+ */
+export const createResumeFormSchema = (
+  profileMessages?: ProfileValidationMessages
+) =>
+  z.object({
+    profile: createProfileSchema(profileMessages),
+    summary: z.string(),
+    coreCompetencies: z.array(stringItemSchema),
+    skills: z.object({
+      programmingLanguages: z.array(stringItemSchema),
+      technologies: z.array(stringItemSchema),
+      toolsPlatforms: z.array(stringItemSchema),
+    }),
+    experience: z.array(
+      z.object({
+        period: z.string(),
+        role: z.string(),
+        company: z.string(),
+        description: z.string(),
+        achievements: z.array(stringItemSchema),
+      })
+    ),
+    education: z.array(educationSchema),
+    certifications: z.array(certificationSchema),
+  });
+
+export const resumeFormSchema = createResumeFormSchema();
 
 export type ResumeFormValues = z.infer<typeof resumeFormSchema>;
 export type StringItem = z.infer<typeof stringItemSchema>;

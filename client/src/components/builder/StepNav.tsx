@@ -1,25 +1,27 @@
 import { Check } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
+import { useMessages } from "@/i18n/LocaleContext";
 import { cn } from "@/lib/utils";
 import { useResumeDraft } from "@/state/ResumeDraftContext";
 import { isResumeComplete } from "@shared/resume";
 
 export const BUILDER_STEPS = [
-  { path: "/", label: "Estilo" },
-  { path: "/editor", label: "Dados" },
-  { path: "/preview", label: "Visualizar" },
+  { path: "/", key: "style" },
+  { path: "/editor", key: "data" },
+  { path: "/preview", key: "preview" },
 ] as const;
 
 export function StepNav() {
   const [location] = useLocation();
   const { draft } = useResumeDraft();
+  const t = useMessages();
   const canPreview = isResumeComplete(draft);
 
   const currentIndex = BUILDER_STEPS.findIndex(step => step.path === location);
 
   return (
-    <nav aria-label="Etapas" className="no-print">
+    <nav aria-label={t.steps.navLabel} className="no-print">
       <ol className="flex flex-wrap items-center gap-1 sm:gap-2">
         {BUILDER_STEPS.map((step, index) => {
           const isCurrent = index === currentIndex;
@@ -41,7 +43,7 @@ export function StepNav() {
               >
                 {isDone ? <Check className="h-3.5 w-3.5" /> : index + 1}
               </span>
-              <span className="text-sm font-medium">{step.label}</span>
+              <span className="text-sm font-medium">{t.steps[step.key]}</span>
             </>
           );
 
@@ -59,7 +61,7 @@ export function StepNav() {
                 <span
                   className={className}
                   aria-disabled="true"
-                  title="Preencha os campos obrigatórios para visualizar"
+                  title={t.steps.lockedHint}
                 >
                   {content}
                 </span>

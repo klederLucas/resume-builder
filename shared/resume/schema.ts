@@ -6,17 +6,49 @@ export const RESUME_SCHEMA_VERSION = 1;
 
 const emailFormat = z.email();
 
-export const profileSchema = z.object({
-  name: z.string().trim().min(1, "Informe seu nome completo."),
-  title: z.string().trim().min(1, "Informe seu cargo ou área de atuação."),
-  location: z.string().trim().min(1, "Informe sua cidade e estado."),
-  phone: z.string().trim().min(1, "Informe um telefone para contato."),
-  email: z
-    .string()
-    .trim()
-    .min(1, "Informe um e-mail para contato.")
-    .refine(value => emailFormat.safeParse(value).success, "E-mail inválido."),
-});
+/**
+ * The only user-facing copy in the shared layer. It is injected rather than
+ * hard-coded so the editor can raise the errors in the interface language,
+ * which is independent from the document language.
+ */
+export interface ProfileValidationMessages {
+  name: string;
+  title: string;
+  location: string;
+  phone: string;
+  email: string;
+  emailInvalid: string;
+}
+
+export const DEFAULT_PROFILE_MESSAGES: ProfileValidationMessages = {
+  name: "Informe seu nome completo.",
+  title: "Informe seu cargo ou área de atuação.",
+  location: "Informe sua cidade e estado.",
+  phone: "Informe um telefone para contato.",
+  email: "Informe um e-mail para contato.",
+  emailInvalid: "E-mail inválido.",
+};
+
+export function createProfileSchema(
+  messages: ProfileValidationMessages = DEFAULT_PROFILE_MESSAGES
+) {
+  return z.object({
+    name: z.string().trim().min(1, messages.name),
+    title: z.string().trim().min(1, messages.title),
+    location: z.string().trim().min(1, messages.location),
+    phone: z.string().trim().min(1, messages.phone),
+    email: z
+      .string()
+      .trim()
+      .min(1, messages.email)
+      .refine(
+        value => emailFormat.safeParse(value).success,
+        messages.emailInvalid
+      ),
+  });
+}
+
+export const profileSchema = createProfileSchema();
 
 export const experienceSchema = z.object({
   period: z.string(),

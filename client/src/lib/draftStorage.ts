@@ -1,4 +1,8 @@
-import { normalizeResume, type Resume } from "@shared/resume";
+import {
+  normalizeResume,
+  type Resume,
+  type ResumeLanguage,
+} from "@shared/resume";
 
 const STORAGE_KEY = "rb:draft:v1";
 const ENVELOPE_VERSION = 1;
@@ -8,7 +12,10 @@ export interface StoredDraft {
   savedAt: number;
 }
 
-export function loadDraft(fallbackTemplateId: string): StoredDraft | null {
+export function loadDraft(
+  fallbackTemplateId: string,
+  fallbackLanguage?: ResumeLanguage
+): StoredDraft | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
@@ -21,6 +28,7 @@ export function loadDraft(fallbackTemplateId: string): StoredDraft | null {
 
     const resume = normalizeResume(envelope.resume, {
       templateId: fallbackTemplateId,
+      language: fallbackLanguage,
     });
 
     return {

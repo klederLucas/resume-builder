@@ -9,6 +9,7 @@ import { ResumeDocument } from "@/components/builder/ResumeDocument";
 import { ScaledSheet } from "@/components/builder/ScaledSheet";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
+import { useMessages } from "@/i18n/LocaleContext";
 import { buildDocumentTitle } from "@/lib/resumeFile";
 import { useResumeDraft } from "@/state/ResumeDraftContext";
 import {
@@ -20,6 +21,7 @@ import {
 export default function PreviewPage() {
   const { draft, setLanguage } = useResumeDraft();
   const contentRef = useRef<HTMLDivElement>(null);
+  const t = useMessages();
   const isComplete = isResumeComplete(draft);
 
   const handlePrint = useReactToPrint({
@@ -29,21 +31,21 @@ export default function PreviewPage() {
 
   useEffect(() => {
     if (!isComplete) {
-      toast.error("Preencha os campos obrigatórios antes de visualizar.");
+      toast.error(t.preview.incomplete);
     }
-  }, [isComplete]);
+  }, [isComplete, t]);
 
   if (!isComplete) return <Redirect to="/editor" />;
 
   return (
     <BuilderShell
       wide
-      title="Visualizar e imprimir"
-      description="Confira o resultado e gere o PDF. Na caixa de impressão, escolha “Salvar como PDF”, margens “Nenhuma” e escala 100%."
+      title={t.preview.title}
+      description={t.preview.description}
       actions={
         <>
-          <ButtonGroup aria-label="Idioma do currículo">
-            {RESUME_LANGUAGES.map((option) => (
+          <ButtonGroup aria-label={t.preview.resumeLanguageLabel}>
+            {RESUME_LANGUAGES.map(option => (
               <Button
                 key={option}
                 size="sm"
@@ -59,12 +61,12 @@ export default function PreviewPage() {
           <Button variant="outline" asChild>
             <Link href="/editor">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar aos dados
+              {t.preview.back}
             </Link>
           </Button>
           <Button onClick={() => handlePrint()}>
             <Printer className="mr-2 h-4 w-4" />
-            Imprimir PDF
+            {t.preview.print}
           </Button>
         </>
       }

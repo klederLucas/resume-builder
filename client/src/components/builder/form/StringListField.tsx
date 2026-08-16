@@ -14,6 +14,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { useMessages } from "@/i18n/LocaleContext";
 import type { ResumeFormValues, StringListName } from "@/lib/resumeForm";
 
 interface StringListFieldProps {
@@ -29,8 +30,9 @@ export function StringListField({
   label,
   description,
   placeholder,
-  addLabel = "Adicionar item",
+  addLabel,
 }: StringListFieldProps) {
+  const t = useMessages().form;
   const { control, register, setFocus } = useFormContext<ResumeFormValues>();
   const { fields, append, remove } = useFieldArray({
     control,
@@ -55,7 +57,7 @@ export function StringListField({
             <InputGroup key={field.id}>
               <InputGroupInput
                 placeholder={placeholder}
-                aria-label={`${label} ${index + 1}`}
+                aria-label={t.itemAria(label, index + 1)}
                 {...register(
                   `${name}.${index}.value` as Path<ResumeFormValues>
                 )}
@@ -71,7 +73,7 @@ export function StringListField({
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  aria-label={`Remover ${label} ${index + 1}`}
+                  aria-label={t.removeItemAria(label, index + 1)}
                   onClick={() => remove(index)}
                 >
                   <X />
@@ -90,7 +92,7 @@ export function StringListField({
         onClick={appendAndFocus}
       >
         <Plus className="mr-1.5 h-4 w-4" />
-        {addLabel}
+        {addLabel ?? t.addItem}
       </Button>
     </Field>
   );

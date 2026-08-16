@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 
+import { useLocale } from "@/i18n/LocaleContext";
 import { clearDraft, loadDraft, saveDraft } from "@/lib/draftStorage";
 import { DEFAULT_TEMPLATE_ID } from "@/templates/registry";
 import {
@@ -35,9 +36,12 @@ const ResumeDraftContext = createContext<ResumeDraftContextValue | undefined>(
 );
 
 export function ResumeDraftProvider({ children }: { children: ReactNode }) {
-  const [stored] = useState(() => loadDraft(DEFAULT_TEMPLATE_ID));
+  // A brand-new resume starts in the language the browser asked for; an
+  // existing draft keeps whatever language it was saved with.
+  const { locale } = useLocale();
+  const [stored] = useState(() => loadDraft(DEFAULT_TEMPLATE_ID, locale));
   const [draft, setDraftState] = useState<Resume>(
-    () => stored?.resume ?? createEmptyResume(DEFAULT_TEMPLATE_ID)
+    () => stored?.resume ?? createEmptyResume(DEFAULT_TEMPLATE_ID, locale)
   );
   const [savedAt, setSavedAt] = useState<number | null>(
     stored?.savedAt ?? null

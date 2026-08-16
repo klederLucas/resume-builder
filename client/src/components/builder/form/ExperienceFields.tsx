@@ -13,6 +13,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { useMessages } from "@/i18n/LocaleContext";
 import type { ResumeFormValues } from "@/lib/resumeForm";
 
 const EMPTY_ENTRY = {
@@ -25,6 +26,7 @@ const EMPTY_ENTRY = {
 
 export function ExperienceFields() {
   const { control } = useFormContext<ResumeFormValues>();
+  const t = useMessages().form;
   const { fields, append, remove, move } = useFieldArray({
     control,
     name: "experience",
@@ -37,15 +39,13 @@ export function ExperienceFields() {
           <EmptyMedia variant="icon">
             <Briefcase />
           </EmptyMedia>
-          <EmptyTitle>Nenhuma experiência adicionada</EmptyTitle>
-          <EmptyDescription>
-            Se você deixar esta seção vazia, ela não aparece no currículo.
-          </EmptyDescription>
+          <EmptyTitle>{t.experience.emptyTitle}</EmptyTitle>
+          <EmptyDescription>{t.hiddenWhenEmpty}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button type="button" onClick={() => append(EMPTY_ENTRY)}>
             <Plus className="mr-1.5 h-4 w-4" />
-            Adicionar experiência
+            {t.experience.add}
           </Button>
         </EmptyContent>
       </Empty>
@@ -72,7 +72,7 @@ export function ExperienceFields() {
         onClick={() => append(EMPTY_ENTRY)}
       >
         <Plus className="mr-1.5 h-4 w-4" />
-        Adicionar experiência
+        {t.experience.add}
       </Button>
     </div>
   );
@@ -92,11 +92,13 @@ function ExperienceItem({
   onRemove: () => void;
 }) {
   const { watch } = useFormContext<ResumeFormValues>();
+  const t = useMessages().form;
   const role = watch(`experience.${index}.role`);
   const company = watch(`experience.${index}.company`);
 
   const title =
-    [role, company].filter(Boolean).join(" — ") || `Experiência ${index + 1}`;
+    [role, company].filter(Boolean).join(" — ") ||
+    `${t.experience.entryLabel} ${index + 1}`;
 
   return (
     <RepeatableCard
@@ -110,36 +112,36 @@ function ExperienceItem({
       <div className="grid gap-4 sm:grid-cols-2">
         <FormTextField
           name={`experience.${index}.role`}
-          label="Cargo"
-          placeholder="Engenheira de Software Sênior"
+          label={t.experience.jobRole.label}
+          placeholder={t.experience.jobRole.placeholder}
         />
         <FormTextField
           name={`experience.${index}.company`}
-          label="Empresa"
-          placeholder="Norte Digital"
+          label={t.experience.company.label}
+          placeholder={t.experience.company.placeholder}
         />
       </div>
 
       <FormTextField
         name={`experience.${index}.period`}
-        label="Período"
-        placeholder="2022 - Atual"
-        description="Texto livre — aparece na coluna à esquerda da entrada."
+        label={t.experience.period.label}
+        placeholder={t.experience.period.placeholder}
+        description={t.experience.period.description}
       />
 
       <FormTextField
         multiline
         name={`experience.${index}.description`}
-        label="Descrição"
-        placeholder="O que você fazia, com que tecnologias e com qual responsabilidade."
+        label={t.experience.description.label}
+        placeholder={t.experience.description.placeholder}
       />
 
       <StringListField
         name={`experience.${index}.achievements`}
-        label="Principais conquistas"
-        description="Resultados concretos, de preferência com número. Enter adiciona a próxima."
-        placeholder="Reduziu o tempo de resposta da API em 70%."
-        addLabel="Adicionar conquista"
+        label={t.experience.achievements.label}
+        description={t.experience.achievements.description}
+        placeholder={t.experience.achievements.placeholder}
+        addLabel={t.experience.achievements.add}
       />
     </RepeatableCard>
   );

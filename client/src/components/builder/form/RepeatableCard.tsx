@@ -14,6 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useMessages } from "@/i18n/LocaleContext";
 
 interface RepeatableCardProps {
   title: string;
@@ -34,6 +35,8 @@ export function RepeatableCard({
   onRemove,
   children,
 }: RepeatableCardProps) {
+  const t = useMessages().form;
+
   return (
     <Item variant="outline" className="flex-col items-stretch gap-4">
       <ItemHeader>
@@ -41,20 +44,20 @@ export function RepeatableCard({
         <ItemActions>
           <ButtonGroup>
             <IconAction
-              label="Mover para cima"
+              label={t.moveUp}
               disabled={index === 0}
               onClick={onMoveUp}
             >
               <ArrowUp className="h-4 w-4" />
             </IconAction>
             <IconAction
-              label="Mover para baixo"
+              label={t.moveDown}
               disabled={index === total - 1}
               onClick={onMoveDown}
             >
               <ArrowDown className="h-4 w-4" />
             </IconAction>
-            <IconAction label="Remover" onClick={onRemove}>
+            <IconAction label={t.remove} onClick={onRemove}>
               <Trash2 className="h-4 w-4" />
             </IconAction>
           </ButtonGroup>

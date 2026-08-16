@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { LocaleSwitcher } from "@/components/builder/LocaleSwitcher";
 import { StepNav } from "@/components/builder/StepNav";
 import { cn } from "@/lib/utils";
 
@@ -28,9 +29,10 @@ export function BuilderShell({
           )}
         >
           <StepNav />
-          {actions && (
-            <div className="flex flex-wrap items-center gap-2">{actions}</div>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {actions}
+            <LocaleSwitcher />
+          </div>
         </div>
       </header>
 

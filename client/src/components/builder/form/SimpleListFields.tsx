@@ -13,6 +13,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { useMessages } from "@/i18n/LocaleContext";
 import type { ResumeFormValues } from "@/lib/resumeForm";
 
 interface TwoFieldListProps {
@@ -39,6 +40,7 @@ function TwoFieldList({
   secondField,
 }: TwoFieldListProps) {
   const { control, watch } = useFormContext<ResumeFormValues>();
+  const t = useMessages().form;
   const { fields, append, remove, move } = useFieldArray({ control, name });
 
   const emptyEntry = {
@@ -54,9 +56,7 @@ function TwoFieldList({
             <Icon />
           </EmptyMedia>
           <EmptyTitle>{emptyTitle}</EmptyTitle>
-          <EmptyDescription>
-            Se você deixar esta seção vazia, ela não aparece no currículo.
-          </EmptyDescription>
+          <EmptyDescription>{t.hiddenWhenEmpty}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button type="button" onClick={() => append(emptyEntry)}>
@@ -113,44 +113,48 @@ function TwoFieldList({
 }
 
 export function EducationFields() {
+  const t = useMessages().form.education;
+
   return (
     <TwoFieldList
       name="education"
       icon={GraduationCap}
-      emptyTitle="Nenhuma formação adicionada"
-      addLabel="Adicionar formação"
-      entryLabel="Formação"
+      emptyTitle={t.emptyTitle}
+      addLabel={t.add}
+      entryLabel={t.entryLabel}
       firstField={{
         key: "degree",
-        label: "Curso / grau",
-        placeholder: "Bacharelado em Ciência da Computação",
+        label: t.degree.label,
+        placeholder: t.degree.placeholder,
       }}
       secondField={{
         key: "institution",
-        label: "Instituição",
-        placeholder: "Universidade Federal do Paraná, 2015",
+        label: t.institution.label,
+        placeholder: t.institution.placeholder,
       }}
     />
   );
 }
 
 export function CertificationFields() {
+  const t = useMessages().form.certifications;
+
   return (
     <TwoFieldList
       name="certifications"
       icon={Award}
-      emptyTitle="Nenhuma certificação adicionada"
-      addLabel="Adicionar certificação"
-      entryLabel="Certificação"
+      emptyTitle={t.emptyTitle}
+      addLabel={t.add}
+      entryLabel={t.entryLabel}
       firstField={{
         key: "name",
-        label: "Certificação",
-        placeholder: "AWS Certified Solutions Architect",
+        label: t.name.label,
+        placeholder: t.name.placeholder,
       }}
       secondField={{
         key: "issuer",
-        label: "Emissor",
-        placeholder: "Amazon Web Services, 2023",
+        label: t.issuer.label,
+        placeholder: t.issuer.placeholder,
       }}
     />
   );
