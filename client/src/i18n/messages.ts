@@ -95,7 +95,7 @@ const pt = {
   preview: {
     title: "Visualizar e imprimir",
     description:
-      "Confira o resultado e gere o PDF. Na caixa de impressão, escolha “Salvar como PDF”, margens “Nenhuma” e escala 100%.",
+      "Confira o resultado e gere o PDF. Na caixa de impressão: destino “Salvar como PDF”, margens “Nenhuma”, escala 100%. Evite “Microsoft Print to PDF” — esse destino gera um arquivo sem texto selecionável.",
     resumeLanguageLabel: "Idioma do currículo",
     back: "Voltar aos dados",
     print: "Imprimir PDF",
@@ -324,7 +324,7 @@ const en: Messages = {
   preview: {
     title: "Preview and print",
     description:
-      "Check the result and generate the PDF. In the print dialog choose “Save as PDF”, margins “None” and scale 100%.",
+      "Check the result and generate the PDF. In the print dialog: destination “Save as PDF”, margins “None”, scale 100%. Avoid “Microsoft Print to PDF” — that destination produces a file with no selectable text.",
     resumeLanguageLabel: "Resume language",
     back: "Back to content",
     print: "Print PDF",
