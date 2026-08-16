@@ -23,6 +23,11 @@ const pt = {
     label: "Idioma da página",
   },
 
+  footer: {
+    enjoying: "Este gerador é gratuito e sem anúncios.",
+    buyMeACoffee: "Me pague um café",
+  },
+
   steps: {
     navLabel: "Etapas",
     style: "Estilo",
@@ -246,6 +251,11 @@ const en: Messages = {
 
   locale: {
     label: "Interface language",
+  },
+
+  footer: {
+    enjoying: "This builder is free and ad-free.",
+    buyMeACoffee: "Buy me a coffee",
   },
 
   steps: {
